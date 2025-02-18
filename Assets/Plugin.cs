@@ -1,10 +1,9 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
 using VTS.Core;
 using VTS.Unity;
-using Unity.VisualScripting;
+using System.IO;
 using System;
 
 public class Plugin : UnityVTSPlugin, ISaveable<Plugin.SaveData>
@@ -27,6 +26,12 @@ public class Plugin : UnityVTSPlugin, ISaveable<Plugin.SaveData>
 
     [SerializeField]
     private TMPro.TMP_InputField _threshold;
+    [SerializeField]
+    private TMPro.TMP_Text _thresholdDisplay;
+
+    private FileSystemWatcher _watcher = new FileSystemWatcher();
+    [SerializeField]
+    private TMPro.TMP_Text _filePathDisplay;
 
     private const string PARAM_COUNTER_NAME = "vts_counter_value";
     private VTSParameterInjectionValue PARAM_COUNTER_VALUE = new VTSParameterInjectionValue();
@@ -129,21 +134,32 @@ public class Plugin : UnityVTSPlugin, ISaveable<Plugin.SaveData>
         this.PARAM_HUNDREDS_VALUE.value = this._counterValue < 100 ? -1 : this._counterValue / 100;
         this.PARAM_COUNTER_VALUE.value = this._counterValue;
         this.PARAM_GRADIENT_VALUE.value = Mathf.Min(1, (float)this._counterValue / Mathf.Max(1, int.Parse(this._threshold.text)));
+        this._thresholdDisplay.text = "(" + _counterValue + "/" + this._threshold.text + " = " + this.PARAM_GRADIENT_VALUE.value + ")";
         if (this.IsAuthenticated)
         {
             this.InjectParameterValues(this._params.ToArray());
         }
     }
 
+    public void OpenLogs(){
+        Application.OpenURL(Application.persistentDataPath);
+    }
+
     public void Increment()
     {
         this._counterValue += 1;
+        if(File.Exists(GetFullFilePath())){
+            File.WriteAllText(GetFullFilePath(), this._counterValue+"");
+        }
     }
 
 
     public void Decrement()
     {
         this._counterValue -= 1;
+        if(File.Exists(GetFullFilePath())){
+            File.WriteAllText(GetFullFilePath(), this._counterValue+"");
+        }
     }
 
     private void CreateNewParameter(string paramName, string paramDescription, int paramMax, VTSParameterInjectionValue value)
@@ -175,6 +191,55 @@ public class Plugin : UnityVTSPlugin, ISaveable<Plugin.SaveData>
         }
     }
 
+    private string OpenFileBrowser(){
+        string[] files = SFB.StandaloneFileBrowser.OpenFilePanel("Choose a file to read...", Application.persistentDataPath, "txt", false);
+        if(files.Length > 0){
+            return files[0];
+        }
+        return "";
+    }
+
+    public void ChooseFile(){
+        string file = OpenFileBrowser();
+        SetFileWatchPath(file);
+    }
+
+    private string GetFullFilePath(){
+        return Path.Join(_watcher.Path, _watcher.Filter);
+    }
+
+    private void SetFileWatchPath(string path){
+        Debug.Log(@path);
+        _watcher.Dispose();
+        if(File.Exists(path)){
+            Debug.Log("Attaching watcher to " + path);
+           _watcher = new FileSystemWatcher();
+           _watcher.Filter = Path.GetFileName(@path);
+           _watcher.Path = Path.GetDirectoryName(@path);
+           _watcher.Changed += OnFileChanged;
+           _watcher.EnableRaisingEvents = true;
+           _filePathDisplay.text = GetFullFilePath();
+           ParseFileContent(GetFullFilePath());
+        }else{
+            Debug.LogWarning(path + " does not exist.");
+        }
+    }
+
+    private void OnFileChanged(object sender, FileSystemEventArgs e){
+        ParseFileContent(e.FullPath);
+    }
+
+    private void ParseFileContent(string path){
+        if(File.Exists(path)){
+            try{
+                string text = File.ReadAllText(path);
+                _counterValue = int.Parse(text);
+            }catch(Exception err){
+                Debug.LogError(err);
+            }
+        }
+    }
+
     public string TransformAfterRead(string content)
     {
         return content;
@@ -193,11 +258,12 @@ public class Plugin : UnityVTSPlugin, ISaveable<Plugin.SaveData>
             {
                 if (hotkey.ID.Equals(keyData.id))
                 {
-                    hotkey.SetHotkey((KeyCode)keyData.key);
+                    hotkey.SetHotkey(keyData.key);
                 }
             }
         }
         this._threshold.text = data.threshold + "";
+        SetFileWatchPath(data.filePath);
     }
 
     public SaveData ToSaveData()
@@ -207,12 +273,13 @@ public class Plugin : UnityVTSPlugin, ISaveable<Plugin.SaveData>
         {
             AssignableHotkey.SaveData keyData = new AssignableHotkey.SaveData();
             keyData.id = hotkey.ID;
-            keyData.key = (int)hotkey.Hotkey;
+            keyData.key = hotkey.Hotkey;
             hotkeys.Add(keyData);
         }
         SaveData data = new SaveData();
         data.hotkeys = hotkeys;
         data.threshold = Mathf.Max(1, int.Parse(this._threshold.text));
+        data.filePath = GetFullFilePath();
         return data;
     }
 
@@ -220,6 +287,7 @@ public class Plugin : UnityVTSPlugin, ISaveable<Plugin.SaveData>
     {
         public List<AssignableHotkey.SaveData> hotkeys = new List<AssignableHotkey.SaveData>();
         public int threshold = 0;
+        public string filePath = "";
     }
 }
 

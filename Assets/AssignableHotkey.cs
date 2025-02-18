@@ -17,31 +17,23 @@ public class AssignableHotkey : MonoBehaviour
     private TMPro.TMP_Text _text;
     private bool _waitingForHotkey = false;
     [SerializeField]
-    private KeyCode _hotkey = KeyCode.None;
-    public KeyCode Hotkey { get { return _hotkey; } }
+    private WindowsKeyHook.VirtualKeys _hotkey = WindowsKeyHook.VirtualKeys.Noname;
+    public WindowsKeyHook.VirtualKeys Hotkey { get { return _hotkey; } }
     public UnityEvent onClick = new UnityEvent();
 
     // Start is called before the first frame update
     void Start()
     {
         _button.onClick.AddListener(ToggleWaiting);
+        WindowsKeyHook.Instance.OnKey.AddListener(ListenForKey);
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if (_waitingForHotkey)
-        {
-            _text.text = "Press key to assign...";
-            _hotkey = CheckKeys();
-        }
-        else
-        {
-            _text.text = _hotkey.ToString();
-            if (Input.GetKeyDown(_hotkey))
-            {
-                onClick.Invoke();
-            }
+        if(_waitingForHotkey){
+            _text.text = "Press any key to assign hotkey...";
+        }else if(_hotkey == WindowsKeyHook.VirtualKeys.Noname){
+            _text.text = "Click to assign hotkey...";
         }
     }
 
@@ -50,29 +42,25 @@ public class AssignableHotkey : MonoBehaviour
         _waitingForHotkey = !_waitingForHotkey;
     }
 
-    private KeyCode CheckKeys()
-    {
-        foreach (KeyCode key in IEnumeratorUtils.GetEnumValues<KeyCode>())
-        {
-            if (Input.GetKey(key))
-            {
-                Debug.Log(key);
-                _waitingForHotkey = false;
-                return key;
-            }
+    public void ListenForKey(WindowsKeyHook.VirtualKeys key){
+        if(_waitingForHotkey){
+            SetHotkey(key);
+            _waitingForHotkey = false;
+        }else if(key == _hotkey){
+            onClick.Invoke();
         }
-        return KeyCode.None;
     }
 
-    public void SetHotkey(KeyCode key)
+    public void SetHotkey(WindowsKeyHook.VirtualKeys key)
     {
+        _text.text = key.ToString();
         _hotkey = key;
     }
 
-    [System.Serializable]
+    [Serializable]
     public class SaveData
     {
         public string id;
-        public int key;
+        public WindowsKeyHook.VirtualKeys key;
     }
 }
