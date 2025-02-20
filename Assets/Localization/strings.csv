@@ -1,0 +1,23 @@
+app_name,vts-counter
+connect_button,Connect
+logs_button,Logs
+about_button,About
+threshold_label,Threshold
+threshold_placeholder,Enter integer...
+threshold_tooltip,"<b>%threshold_label</b> refers to the maximum value you are expecting to hit.
+
+VTube Studio will recieve a tracking parameter called <b>""vts_counter_gradient""</b>, that has a value between 0.0 and 1.0, calculated as your current value divided by your %threshold_label."
+choose_file_label,Choose Source File
+choose_file_tooltip,You can choose a .txt file to read from and write to. The contents of the file should simply be a plaintext number.
+version_label,New Version Available!
+version_button,Download
+version_tooltip,"A newer version of this plugin is now available.
+<b>Version</b>: {0}
+<b>Release Date</b>: {1}
+
+You can download it at: {2}"
+,
+error_generic_title,Error!
+error_cannot_resolve_tooltip,An error has occured. Please contact the developer!
+feedback_button_email,Send an email!
+msic,aeiou

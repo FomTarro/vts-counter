@@ -141,15 +141,22 @@ public class Plugin : UnityVTSPlugin, ISaveable<Plugin.SaveData>
         }
     }
 
-    public void OpenLogs(){
+    public void OpenLogs()
+    {
         Application.OpenURL(Application.persistentDataPath);
+    }
+
+    public void OpenAbout()
+    {
+        Application.OpenURL("https://www.skeletom.net/projects/vts-counter");
     }
 
     public void Increment()
     {
         this._counterValue += 1;
-        if(File.Exists(GetFullFilePath())){
-            File.WriteAllText(GetFullFilePath(), this._counterValue+"");
+        if (File.Exists(GetFullFilePath()))
+        {
+            File.WriteAllText(GetFullFilePath(), this._counterValue + "");
         }
     }
 
@@ -157,8 +164,9 @@ public class Plugin : UnityVTSPlugin, ISaveable<Plugin.SaveData>
     public void Decrement()
     {
         this._counterValue -= 1;
-        if(File.Exists(GetFullFilePath())){
-            File.WriteAllText(GetFullFilePath(), this._counterValue+"");
+        if (File.Exists(GetFullFilePath()))
+        {
+            File.WriteAllText(GetFullFilePath(), this._counterValue + "");
         }
     }
 
@@ -191,50 +199,64 @@ public class Plugin : UnityVTSPlugin, ISaveable<Plugin.SaveData>
         }
     }
 
-    private string OpenFileBrowser(){
+    private string OpenFileBrowser()
+    {
         string[] files = SFB.StandaloneFileBrowser.OpenFilePanel("Choose a file to read...", Application.persistentDataPath, "txt", false);
-        if(files.Length > 0){
+        if (files.Length > 0)
+        {
             return files[0];
         }
         return "";
     }
 
-    public void ChooseFile(){
+    public void ChooseFile()
+    {
         string file = OpenFileBrowser();
         SetFileWatchPath(file);
     }
 
-    private string GetFullFilePath(){
+    private string GetFullFilePath()
+    {
         return Path.Join(_watcher.Path, _watcher.Filter);
     }
 
-    private void SetFileWatchPath(string path){
+    private void SetFileWatchPath(string path)
+    {
         Debug.Log(@path);
         _watcher.Dispose();
-        if(File.Exists(path)){
+        if (File.Exists(path))
+        {
             Debug.Log("Attaching watcher to " + path);
-           _watcher = new FileSystemWatcher();
-           _watcher.Filter = Path.GetFileName(@path);
-           _watcher.Path = Path.GetDirectoryName(@path);
-           _watcher.Changed += OnFileChanged;
-           _watcher.EnableRaisingEvents = true;
-           _filePathDisplay.text = GetFullFilePath();
-           ParseFileContent(GetFullFilePath());
-        }else{
+            _watcher = new FileSystemWatcher();
+            _watcher.Filter = Path.GetFileName(@path);
+            _watcher.Path = Path.GetDirectoryName(@path);
+            _watcher.Changed += OnFileChanged;
+            _watcher.EnableRaisingEvents = true;
+            _filePathDisplay.text = GetFullFilePath();
+            ParseFileContent(GetFullFilePath());
+        }
+        else
+        {
             Debug.LogWarning(path + " does not exist.");
         }
     }
 
-    private void OnFileChanged(object sender, FileSystemEventArgs e){
+    private void OnFileChanged(object sender, FileSystemEventArgs e)
+    {
         ParseFileContent(e.FullPath);
     }
 
-    private void ParseFileContent(string path){
-        if(File.Exists(path)){
-            try{
+    private void ParseFileContent(string path)
+    {
+        if (File.Exists(path))
+        {
+            try
+            {
                 string text = File.ReadAllText(path);
                 _counterValue = int.Parse(text);
-            }catch(Exception err){
+            }
+            catch (Exception err)
+            {
                 Debug.LogError(err);
             }
         }
