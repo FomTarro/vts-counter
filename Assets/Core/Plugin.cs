@@ -33,6 +33,9 @@ public class Plugin : UnityVTSPlugin, ISaveable<Plugin.SaveData>
     [SerializeField]
     private TMPro.TMP_Text _filePathDisplay;
 
+    [SerializeField]
+    private TMPro.TMP_Text _versionDisplay;
+
     private const string PARAM_COUNTER_NAME = "vts_counter_value";
     private VTSParameterInjectionValue PARAM_COUNTER_VALUE = new VTSParameterInjectionValue();
 
@@ -64,6 +67,7 @@ public class Plugin : UnityVTSPlugin, ISaveable<Plugin.SaveData>
         _incrementButton.onClick.AddListener(Increment);
         _decrementButton.onClick.AddListener(Decrement);
         Connect();
+        _versionDisplay.text = string.Format(Localization.LocalizationManager.Instance.GetString("sponsored_by"), Application.version);
     }
 
     private void OnApplicationQuit()

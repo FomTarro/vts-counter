@@ -20,4 +20,5 @@ You can download it at: {2}"
 error_generic_title,Error!
 error_cannot_resolve_tooltip,An error has occured. Please contact the developer!
 feedback_button_email,Send an email!
-msic,aeiou
+sponsored_by,"<b>v{0}</b> - Plugin built by Tom ""Skeletom"" Farro - Graciously sponsored by Sebastian Shroomer!"
+misc,aeiou

@@ -2957,6 +2957,7 @@ MonoBehaviour:
   _threshold: {fileID: 1661276984}
   _thresholdDisplay: {fileID: 596874882}
   _filePathDisplay: {fileID: 1818222588}
+  _versionDisplay: {fileID: 2101596854}
 --- !u!4 &1455471503
 Transform:
   m_ObjectHideFlags: 0
